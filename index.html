@@ -255,9 +255,14 @@
       displayMessage(message, sender);
     });
 
-    // Event listener for user input changes
-    userInput.addEventListener('input', () => {
+    // Event listener for user input changes and keydown
+    userInput.addEventListener('input', (event) => {
       sendButton.disabled = userInput.value.trim() === '';
+
+      if (event.key === 'Enter' && userInput.value.trim() !== '') {
+        event.preventDefault();
+        sendButton.click();
+      }
     });
 
     // Event listener for send button click
