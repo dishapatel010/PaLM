@@ -182,7 +182,21 @@
     #close-button:hover {
       background-color: #999;
     }
-  </style>
+    
+   .typing-indicator {
+        display: inline-block;
+        animation: typing 1s infinite;
+        font-size: 24px;
+        color: #aaa;
+        margin-left: 5px;
+      }
+
+    @keyframes typing {
+        0% { opacity: 0.3; }
+        50% { opacity: 1; }
+        100% { opacity: 0.3; }
+      }
+</style>
 </head>
 <body>
   <!-- Add the navbar -->
@@ -361,6 +375,11 @@
         candidate_count: 1
       };
 
+      const typingIndicator = document.createElement('span');
+        typingIndicator.classList.add('typing-indicator');
+        typingIndicator.innerText = '...';
+        chatContainer.appendChild(typingIndicator);
+      
       fetch(requestUrl, {
         method: 'POST',
         headers: {
@@ -370,6 +389,7 @@
       })
       .then(response => response.json())
       .then(data => {
+      chatContainer.removeChild(typingIndicator);
         const botResponse = data.candidates[0].content; // Extract bot's response from candidates array
 
         // Display bot response in the chat container
@@ -380,6 +400,7 @@
         saveConversationHistory();
       })
       .catch(error => {
+        chatContainer.removeChild(typingIndicator);
         console.error('Error:', error);
         displayMessage('An error occurred.', 'bot');
       });
