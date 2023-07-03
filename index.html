@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>PaLM</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Add styles for the navbar */
+    .navbar {
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      background-color: #007bff;
+      color: #fff;
+      padding: 10px;
+      z-index: 2;
+    }
+
+    .navbar-title {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center !important;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .menu-dropdown {
+      position: relative;
+      display: inline-block;
+      z-index: 3;
+    }
+
+    .menu-content {
+      display: none;
+      position: absolute;
+      background-color: #007bff;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 4;
+      right: 0;
+      max-width: calc(100vw - 10px);
+    }
+
+    .menu-dropdown:hover .menu-content {
+      display: block;
+    }
+
+    .menu-content button {
+      width: 100%;
+      text-align: left;
+      padding: 8px 12px;
+      border: none;
+      background-color: #fff;
+      color: #000;
+      cursor: pointer;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .menu-content button:hover {
+      background-color: #fff;
+    }
+
+    .chat-section {
+      position: sticky;
+      top: 0;
+      background-color: #f2f2f2;
+      padding: 0px;
+    }
+
+    #chat-container {
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-bottom: 10px;
+      max-height: calc(100vh - 100px); /* Adjust the height as per your needs */
+      overflow-y: scroll;
+      word-wrap: break-word;
+      width: calc(100% - 22px); /* Adjust the width by accounting for the border and padding */
+    }
+
+    .user, .bot {
+      margin-bottom: 5px;
+      word-wrap: break-word;
+      padding: 8px;
+      border-radius: 5px;
+    }
+
+    .user {
+      text-align: right;
+      background-color: #007bff;
+      color: #fff;
+      margin-left: auto;
+      align-self: flex-end;
+    }
+
+    .bot {
+      text-align: left;
+      background-color: #f2f2f2;
+      color: #333;
+      margin-right: auto;
+    }
+
+    #input-container {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      background-color: #f2f2f2;
+    }
+
+    #user-input {
+      flex-grow: 1;
+      padding: 5px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+    }
+
+    #send-button {
+      margin-left: 10px;
+      padding: 5px 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    #send-button:hover {
+      background-color: #0056b3;
+    }
+
+    #settings-popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #f2f2f2;
+      padding: 20px;
+      z-index: 999;
+    }
+
+    #settings-popup input[type="text"] {
+      margin-bottom: 10px;
+      width: 100%;
+      padding: 5px;
+    }
+
+    #settings-popup button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    #settings-popup button:hover {
+      background-color: #0056b3;
+    }
+
+    #close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      background-color: #ccc;
+      color: #fff;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+
+    #close-button:hover {
+      background-color: #999;
+    }
+  </style>
+</head>
+<body>
+  <!-- Add the navbar -->
+  <div class="navbar">
+    <div class="navbar-title title">PaLM</div>
+    <div class="menu-dropdown">
+      <button class="dropbtn">&#9776</button>
+      <div class="menu-content">
+        <button id="settings-button">Settings</button>
+        <button id="download-button">Download</button>
+        <button id="clear-button">Clear Conversation</button>
+      <a href="https://github.com/dishapatel010/PaLM" target="_blank" rel="noopener noreferrer">
+        <button>GitHub Repository</button>
+      </a>
+    </div>
+    </div>
+  </div>
+
+  <!-- Wrap the chat container and input container in a parent div with class "chat-section" -->
+  <div class="chat-section">
+    <div id="chat-container"></div>
+    <div id="input-container">
+      <input type="text" id="user-input">
+      <button id="send-button" disabled>Send</button>
+    </div>
+  </div>
+
+  <div id="settings-popup">
+    <button id="close-button">Close</button>
+    <h3>API Key Configuration</h3>
+    <p>Please enter your API key:</p>
+    <input type="text" id="api-key-input">
+    <button id="save-button">Save</button>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById('chat-container');
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const settingsButton = document.getElementById('settings-button');
+    const downloadButton = document.getElementById('download-button');
+    const settingsPopup = document.getElementById('settings-popup');
+    const apiKeyInput = document.getElementById('api-key-input');
+    const saveButton = document.getElementById('save-button');
+    const closeButton = document.getElementById('close-button');
+    const apiUrl = 'https://generativelanguage.googleapis.com/v1beta2/models/chat-bison-001:generateMessage?key=';
+    const clearButton = document.getElementById('clear-button');
+
+    // Load conversation history from local storage
+    const conversationHistory = JSON.parse(localStorage.getItem('conversationHistory')) || [];
+
+    // Display conversation history on page load
+    conversationHistory.forEach(([message, sender]) => {
+      displayMessage(message, sender);
+    });
+
+    // Event listener for user input changes
+    userInput.addEventListener('input', () => {
+      sendButton.disabled = userInput.value.trim() === '';
+    });
+
+    // Event listener for send button click
+    sendButton.addEventListener('click', () => {
+      const userMessage = userInput.value.trim(); // Trim any leading/trailing spaces
+
+      if (userMessage === '') {
+        return; // Do not send if the message is empty
+      }
+
+      // Clear the input field
+      userInput.value = '';
+
+      // Display user message in the chat container
+      displayMessage(userMessage, 'user');
+
+      // Add user message to conversation history
+      conversationHistory.push([userMessage, 'user']);
+      saveConversationHistory();
+
+      // Send user message to the backend API
+      sendUserMessage(userMessage);
+    });
+
+    // Event listener for settings button click
+    settingsButton.addEventListener('click', () => {
+      settingsPopup.style.display = 'block';
+    });
+
+    // Event listener for close button click in the settings popup
+    closeButton.addEventListener('click', () => {
+      settingsPopup.style.display = 'none';
+    });
+
+    // Add event listener for clear button click
+    clearButton.addEventListener('click', () => {
+      clearConversation();
+    });
+
+    // Event listener for download button click
+    downloadButton.addEventListener('click', () => {
+      downloadConversationHistory();
+    });
+
+    // Event listener for save button click in the settings popup
+    saveButton.addEventListener('click', () => {
+      const apiKey = apiKeyInput.value;
+      saveApiKey(apiKey);
+      settingsPopup.style.display = 'none';
+    });
+
+    // Function to display a message in the chat container
+    function displayMessage(message, sender) {
+      const messageElement = document.createElement('div');
+      messageElement.classList.add(sender);
+      messageElement.innerText = message;
+      chatContainer.appendChild(messageElement);
+
+      // Scroll to the bottom of the chat container
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    // Function to save the API key to local storage
+    function saveApiKey(apiKey) {
+      localStorage.setItem('apiKey', apiKey);
+    }
+
+    // Function to get the API key from local storage
+    function getApiKey() {
+      return localStorage.getItem('apiKey');
+    }
+
+    // Function to clear the conversation history
+    function clearConversation() {
+      // Display a confirmation prompt
+      const confirmation = confirm("Are you sure you want to clear the conversation?");
+
+      // If the user confirms, clear the conversation
+      if (confirmation) {
+        // Clear the chat container
+        chatContainer.innerHTML = '';
+
+        // Clear the conversation history array
+        conversationHistory.length = 0;
+
+        // Remove conversation history from local storage
+        localStorage.removeItem('conversationHistory');
+      }
+    }
+
+    // Function to save the conversation history to local storage
+    function saveConversationHistory() {
+      localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
+    }
+
+    // Function to send user message to the backend API
+    function sendUserMessage(message) {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        displayMessage('Please configure the API key in the settings.', 'bot');
+        return;
+      }
+
+      const requestUrl = apiUrl + apiKey;
+
+      const requestBody = {
+        prompt: { messages: [{ content: message }] },
+        temperature: 0.1,
+        candidate_count: 1
+      };
+
+      fetch(requestUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestBody)
+      })
+      .then(response => response.json())
+      .then(data => {
+        const botResponse = data.candidates[0].content; // Extract bot's response from candidates array
+
+        // Display bot response in the chat container
+        displayMessage(botResponse, 'bot');
+
+        // Add bot response to conversation history
+        conversationHistory.push([botResponse, 'bot']);
+        saveConversationHistory();
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        displayMessage('An error occurred.', 'bot');
+      });
+    }
+    
+    // Function to convert conversation history to a downloadable file
+    function downloadConversationHistory() {
+      const text = conversationHistory.map(([message, sender]) => `${sender}: ${message}`).join('\n');
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'conversation_history.txt';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
