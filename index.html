@@ -257,8 +257,8 @@
     const conversationHistory = JSON.parse(localStorage.getItem('conversationHistory')) || [];
 
     // Display conversation history on page load
-    conversationHistory.forEach(([message, sender]) => {
-      displayMessage(message, sender);
+    conversationHistory.forEach(([message, sender, timestamp]) => {
+      displayMessage(message, sender, timestamp);
     });
 
     // Event listener for user input changes and keydown
@@ -293,11 +293,13 @@
       // Clear the input field
       userInput.value = '';
 
+      const utimestamp = new Date().toLocaleTimeString();
+
       // Display user message in the chat container
-      displayMessage(userMessage, 'user');
+      displayMessage(userMessage, 'user', utimestamp);
 
       // Add user message to conversation history
-      conversationHistory.push([userMessage, 'user']);
+      conversationHistory.push([userMessage, 'user', utimestamp]);
       saveConversationHistory();
 
       // Send user message to the backend API
@@ -334,7 +336,7 @@
     });
 
     // Function to display a message in the chat container
-    function displayMessage(message, sender) {
+    function displayMessage(message, sender, timestamp) {
       const messageElement = document.createElement('div');
       messageElement.classList.add(sender);
 
@@ -346,10 +348,6 @@
       messageElement.innerHTML = message; // Use innerHTML to parse HTML tags
       chatContainer.appendChild(messageElement);
 
-      // Get the current local time
-      const timestamp = new Date().toLocaleTimeString();
-
-      // Add the timestamp below the message
       const timestampElement = document.createElement('div');
       timestampElement.classList.add('timestamp');
       timestampElement.innerText = timestamp;
@@ -393,7 +391,11 @@
 
     // Function to save the conversation history to local storage
     function saveConversationHistory() {
-      localStorage.setItem('conversationHistory', JSON.stringify(conversationHistory));
+      const formattedHistory = conversationHistory.map(([message, sender]) => {
+        const timestamp = new Date().toLocaleTimeString();
+        return [message, sender, timestamp];
+      });
+      localStorage.setItem('conversationHistory', JSON.stringify(formattedHistory));
     }
 
     // Function to send user message to the backend API
@@ -429,11 +431,13 @@
       chatContainer.removeChild(typingIndicator);
         const botResponse = data.candidates[0].content; // Extract bot's response from candidates array
 
+        const btimestamp = new Date().toLocaleTimeString();
+
         // Display bot response in the chat container
-        displayMessage(botResponse, 'bot');
+        displayMessage(botResponse, 'bot', btimestamp);
 
         // Add bot response to conversation history
-        conversationHistory.push([botResponse, 'bot']);
+        conversationHistory.push([botResponse, 'bot', btimestamp]);
         saveConversationHistory();
       })
       .catch(error => {
@@ -445,14 +449,16 @@
     
     // Function to convert conversation history to a downloadable file
     function downloadConversationHistory() {
-      const text = conversationHistory.map(([message, sender]) => `${sender}: ${message}`).join('\n');
-      const blob = new Blob([text], { type: 'text/plain' });
+      const formattedHistory = conversationHistory.map(([message, sender, timestamp]) => {
+        return `${timestamp} [${sender}]: ${message}`;
+      });
+      const formattedContent = formattedHistory.join('\n');
+      const blob = new Blob([formattedContent], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'conversation_history.txt';
-      a.click();
-      URL.revokeObjectURL(url);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'conversation_history.txt';
+      link.click();
     }
 
     window.addEventListener('DOMContentLoaded', () => {
