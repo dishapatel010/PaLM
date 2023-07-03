@@ -218,6 +218,7 @@
     <button id="save-button">Save</button>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script>
     const chatContainer = document.getElementById('chat-container');
     const userInput = document.getElementById('user-input');
@@ -297,7 +298,13 @@
     function displayMessage(message, sender) {
       const messageElement = document.createElement('div');
       messageElement.classList.add(sender);
-      messageElement.innerText = message;
+
+      // Convert the bot's response from Markdown to HTML using marked.js
+      if (sender === 'bot') {
+        message = marked.parse(message);
+      }
+
+      messageElement.innerHTML = message; // Use innerHTML to parse HTML tags
       chatContainer.appendChild(messageElement);
 
       // Scroll to the bottom of the chat container
