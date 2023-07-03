@@ -191,6 +191,12 @@
         margin-left: 5px;
       }
 
+   .timestamp {
+        font-size: 12px;
+        color: #999;
+        margin-top: 4px;
+      } 
+
     @keyframes typing {
         0% { opacity: 0.3; }
         50% { opacity: 1; }
@@ -340,6 +346,18 @@
       messageElement.innerHTML = message; // Use innerHTML to parse HTML tags
       chatContainer.appendChild(messageElement);
 
+      // Get the current local time
+      const timestamp = new Date().toLocaleTimeString();
+
+      // Add the timestamp below the message
+      const timestampElement = document.createElement('div');
+      timestampElement.classList.add('timestamp');
+      timestampElement.innerText = timestamp;
+      chatContainer.appendChild(timestampElement);
+      // Add a horizontal line after the timestamp
+      const lineElement = document.createElement('hr');
+      chatContainer.appendChild(lineElement);
+  
       // Scroll to the bottom of the chat container
       chatContainer.scrollTop = chatContainer.scrollHeight;
       window.scrollTo(0, document.body.scrollHeight);
