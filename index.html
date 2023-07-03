@@ -280,6 +280,8 @@
 
       // Send user message to the backend API
       sendUserMessage(userMessage);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      window.scrollTo(0, document.body.scrollHeight);
     });
 
     // Event listener for settings button click
@@ -324,6 +326,7 @@
 
       // Scroll to the bottom of the chat container
       chatContainer.scrollTop = chatContainer.scrollHeight;
+      window.scrollTo(0, document.body.scrollHeight);
     }
 
     // Function to save the API key to local storage
