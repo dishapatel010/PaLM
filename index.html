@@ -219,7 +219,7 @@
   <div class="chat-section">
     <div id="chat-container"></div>
     <div id="input-container">
-      <input type="text" id="user-input">
+      <input type="text" id="user-input" placeholder="Type your message here">
       <button id="send-button" disabled>Send</button>
     </div>
   </div>
@@ -436,6 +436,10 @@
       a.click();
       URL.revokeObjectURL(url);
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      userInput.focus();
+    });
   </script>
 </body>
 </html>
