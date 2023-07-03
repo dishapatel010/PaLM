@@ -259,7 +259,7 @@
     userInput.addEventListener('input', (event) => {
       sendButton.disabled = userInput.value.trim() === '';
 
-      if (event.key === 'Enter' && userInput.value.trim() !== '') {
+      if (event.key === 'Enter' && !event.shiftKey && userInput.value.trim() !== '') {
         event.preventDefault();
         sendButton.click();
       }
